@@ -16,15 +16,13 @@ KERNEL_OFFSET equ 0x1000            ; offset in memory at which the kernel will 
 
     call load_kernel                ; load the kernel code from the boot drive into memory
 
+    mov bx, SWITCHING_MODE_MSG      ; print message that we're trying to switch the mode to Protected Mode
+    call print_string_real_mode
+
 	call switch_to_protected_mode	; switch to the CPU's protected mode
 
 	jmp $
 
-; The number of the boot drive and message variables
-BOOT_DRIVE          db 0
-BOOT_MSG 		    db "Started boot process (currently in real-mode)", 0
-PROTECTED_MODE_MSG	db "Successfuly entered the CPU's 32-bit real mode", 0	
-LOAD_KERNEL_MSG     db "Loading the kernel into memory...", 0
 
 ; Includes
 %include "boot/print_string/print_string_real_mode.asm"
@@ -46,7 +44,6 @@ load_kernel:
 
     ret                         ; return to the call address
 
-
 [bits 32]
 
 begin_protected_mode:
@@ -58,7 +55,13 @@ begin_protected_mode:
 
 	jmp $
 
+; The number of the boot drive and message variables
+BOOT_DRIVE          db 0
+BOOT_MSG 		    db "Started boot process (currently in real-mode)", 0
+SWITCHING_MODE_MSG  db "Switching to Protected Mode", 0
+PROTECTED_MODE_MSG	db "Successfuly entered the CPU's 32-bit real mode", 0	
+LOAD_KERNEL_MSG     db "Loading the kernel into memory...", 0
+
 ; Bootsector padding (needs to be 512-byte long)
 times 510-($-$$) db 0
 dw 0xaa55
-

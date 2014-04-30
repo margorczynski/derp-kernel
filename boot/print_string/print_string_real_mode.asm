@@ -3,7 +3,12 @@
 ;
 print_string_real_mode:
 	pusha				; push all current register values to the stack
-	mov ah, 0x0e			; load into the AH register (upper AX) that we want the BIOS tele-type mode
+	mov ah, 0x0e		; load into the AH register (upper AX) that we want the BIOS tele-type mode
+
+    mov al, 0x0d        ; print a carriage return char
+    int 0x10
+    mov al, 0x0a        ; print a line feed char, this will make the string to print in a new line
+    int 0x10
 
 print_string_real_mode_loop:
 	mov al, [bx]			; load into AL the ASCII code of the char under the adress BX
