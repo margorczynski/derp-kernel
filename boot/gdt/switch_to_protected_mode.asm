@@ -21,7 +21,7 @@ switch_to_protected_mode:			; switch to the protected mode of the CPU
 						; this also forces the CPU to flush the cache of pre-fetched
 						; instructions (which can be 16-bit real mode instructions)
 
-%include "gdt/gdt.asm" 
+%include "boot/gdt/gdt.asm" 
 
 [bits 32]
 
