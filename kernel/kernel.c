@@ -2,7 +2,7 @@
  * The main source file containing the entry point (the function/symbol called by the bootloader) of the kernel
  */
 
-void main(void)
+void kernel_main(void)
 {
     char *video_memory = (char*) 0xb8000;
 

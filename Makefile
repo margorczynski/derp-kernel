@@ -7,7 +7,8 @@ BOOTLOADER_SOURCES = boot/boot.asm \
 		     boot/gdt/switch_to_protected_mode.asm \
 			 boot/disk_io/disk_read.asm
 
-KERNEL_SOURCES = kernel/kernel.c
+KERNEL_SOURCES = kernel/kernel.c \
+				 kernel/kernel_entry.asm
 
 
 all: bootloader kernel image
@@ -15,11 +16,14 @@ all: bootloader kernel image
 bootloader: $(BOOTLOADER_SOURCES)
 	    nasm boot/boot.asm -f bin -o boot/boot.bin
 
-kernel_object: $(KERNEL_SOURCES)
-		gcc -ffreestanding -c kernel/kernel.c -o kernel/kernel.o
+kernel_entry: $(KERNEL_SOURCES)
+		nasm kernel/kernel_entry.asm -f elf -o kernel/kernel_entry.o
 
-kernel: kernel_object
-		ld -o kernel/kernel.bin -Ttext 0x1000 kernel/kernel.o --oformat binary
+kernel_object: $(KERNEL_SOURCES)
+		gcc -m32 -ffreestanding -c kernel/kernel.c -o kernel/kernel.o
+
+kernel: kernel_object kernel_entry
+		ld -o kernel/kernel.bin -m elf_i386 -Ttext 0x1000 kernel/kernel_entry.o kernel/kernel.o --oformat binary
 
 image:	bootloader kernel 
 		cat boot/boot.bin kernel/kernel.bin > image/os-image.img
