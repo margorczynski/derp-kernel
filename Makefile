@@ -23,6 +23,7 @@ kernel: kernel_object
 
 image:	bootloader kernel 
 		cat boot/boot.bin kernel/kernel.bin > image/os-image.img
+		dd if=/dev/zero bs=1 count=1000000 >> image/os-image.img
 
 test:	all
 		qemu-kvm image/os-image.img

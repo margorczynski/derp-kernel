@@ -38,7 +38,7 @@ load_kernel:
     call print_string_real_mode ;
 
     mov bx, KERNEL_OFFSET       ; this is the offset at which the kernel will be load into memory
-    mov dh, 15                  ; read 15 sectors after the boot sector
+    mov dh, 1                   ; read 15 sectors after the boot sector
     mov dl, [BOOT_DRIVE]        ; from the drive the BIOS started booting
     call disk_read              ; call the function to read it into memory
 
@@ -65,3 +65,6 @@ LOAD_KERNEL_MSG     db "Loading the kernel into memory...", 0
 ; Bootsector padding (needs to be 512-byte long)
 times 510-($-$$) db 0
 dw 0xaa55
+
+; Disk space
+;times 0x00800000 - ($ - $$) db 0
