@@ -10,8 +10,10 @@ BOOTLOADER_SOURCES = boot/boot.asm \
 KERNEL_SOURCES = kernel/kernel.c \
 				 kernel/kernel_entry.asm
 
+DRIVERS_SOURCES = drivers/vga/text_mode.c 
 
-all: bootloader kernel image
+
+all: bootloader drivers kernel image
 
 bootloader: $(BOOTLOADER_SOURCES)
 	    nasm boot/boot.asm -f bin -o boot/boot.bin
@@ -23,7 +25,10 @@ kernel_object: $(KERNEL_SOURCES)
 		gcc -m32 -ffreestanding -c kernel/kernel.c -o kernel/kernel.o
 
 kernel: kernel_object kernel_entry
-		ld -o kernel/kernel.bin -m elf_i386 -Ttext 0x1000 kernel/kernel_entry.o kernel/kernel.o --oformat binary
+		ld -o kernel/kernel.bin -m elf_i386 -Ttext 0x1000 kernel/kernel_entry.o drivers/vga/text_mode.o kernel/kernel.o --oformat binary
+
+drivers: $(DRIVERS_SOURCES)
+		gcc -m32 -ffreestanding -c drivers/vga/text_mode.c -o drivers/vga/text_mode.o
 
 image:	bootloader kernel 
 		cat boot/boot.bin kernel/kernel.bin > image/os-image.img
