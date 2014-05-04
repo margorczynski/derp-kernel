@@ -29,18 +29,24 @@ void vga_print_char(char character, attribute_struct_t attribute_struct)
 
 /*
  * Print a single character at a specified position
- * If the row or column argument is less than zero or greater than the maximum value
+ * If the row or column argument is less than zero or greater-equal than the maximum value
  * it will use the current cursor position instead
  *
  * @param character the character to be printed
- * @param row the row at which the character should be printed (see description)
- * @param column the column at which the character should be printed (see description)
+ * @param row the row at which the character will be printed (see description)
+ * @param column the column at which the character will be printed (see description)
  * @param attribute_struct the structure with the characters attribute
  */
 void vga_print_char_at(char character, int row, int column, attribute_struct_t attribute_struct)
 {
+    const int current_cursor_row    = vga_get_cursor_position_row();
+    const int current_cursor_column = vga_get_cursor_position_column();
+
     unsigned char *vga_video_memory = (unsigned char*) VGA_VIDEO_MEMORY_ADDRESS;
-    int offset = 0;
+    int offset            = 0;
+    int new_cursor_row    = row + column/MAX_COLUMN;
+    int new_cursor_column = (column + 1) % MAX_COLUMN;
+
 
     if( row >= 0 && column >= 0 && row < MAX_ROW && column < MAX_COLUMN)
     {
@@ -48,13 +54,26 @@ void vga_print_char_at(char character, int row, int column, attribute_struct_t a
     }
     else
     {
-        offset = _vga_get_video_memory_offset( vga_get_cursor_position_row(), vga_get_cursor_position_column() );
+
+        offset = _vga_get_video_memory_offset(current_cursor_row, current_cursor_column);
+
+        new_cursor_row    = current_cursor_row + current_cursor_column/MAX_COLUMN;
+        new_cursor_column = (current_cursor_column + 1) % MAX_COLUMN;
+    }
+
+    if(character == '\n')
+    {
+        offset = _vga_get_video_memory_offset(current_cursor_row, 79);
+
+        new_cursor_row    = (current_cursor_row + 1) % MAX_ROW;
+        new_cursor_column = 0;
     }
 
     vga_video_memory[offset]     = character;
     vga_video_memory[offset + 1] = _vga_get_attribute_byte(attribute_struct);
 
-    vga_set_cursor_position(row, column);
+    //Move the cursor one position further (or newline if where at the end of the screen width)
+    vga_set_cursor_position(new_cursor_row, new_cursor_column);
 }
 
 /*
@@ -62,8 +81,63 @@ void vga_print_char_at(char character, int row, int column, attribute_struct_t a
  */
 
 /*
+ * Print a string at the current cursor position
+ *
+ * @param string the constant pointer to the printed string (must be NULL-terminated)
+ * @param attribute_structure the structure with the strings attribute
+ */
+void vga_print_string(const char *string, attribute_struct_t attribute_struct)
+{
+    vga_print_string_at(string, -1, -1, attribute_struct);
+}
+
+/*
+ * Print a string at a specified position
+ * If the row or column argument is less than zero or greater-equal than the maximum value
+ * it will use the current cursor position instead
+ *
+ * @param string the constant pointer to the printed string (must be NULL-terminated)
+ * @param row the row at which the string will be printed (see description)
+ * @param column the column at which the string will be printed (see description)
+ * @param attribute_struct the structure with the string attribute
+ */
+void vga_print_string_at(const unsigned char *string, int row, int column, attribute_struct_t attribute_struct)
+{
+    int i;
+
+    if(row >= 0 || column >= 0)
+    {
+        vga_set_cursor_position(row, column);
+    }
+
+    for(i = 0; string[i] != '\0'; ++i)
+    {
+        vga_print_char_at(string[i], -1, -1, attribute_struct);
+    }
+}
+
+/*
  * Screen functions
  */
+
+/*
+ * Clear the screen
+ */
+void vga_clear_screen(void)
+{
+    static const attribute_struct_t CLEARED_SCREEN_ATTRIBUTE_STRUCT = { VGA_WHITE, 0x1, VGA_BLACK, 0x0 };
+    int i, j;
+
+    for(i = 0; i < MAX_ROW; ++i)
+    {
+        for(j = 0; j < MAX_COLUMN; ++j)
+        {
+            vga_print_char_at(' ', i, j, CLEARED_SCREEN_ATTRIBUTE_STRUCT);
+        }
+    }
+
+    vga_set_cursor_position(0, 0);
+}
 
 /*
  * Cursor functions
@@ -127,6 +201,11 @@ int vga_get_cursor_position_column(void)
  */
 static int _vga_get_video_memory_offset(int row, int column)
 {
+    if(row < 0 || column < 0 || row >= MAX_ROW || column >= MAX_COLUMN)
+    {
+        return 0;
+    }
+
     return (row * MAX_COLUMN + column) * 2;
 }
 

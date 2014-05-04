@@ -21,14 +21,14 @@ typedef struct
  */
 typedef enum
 {
-    BLACK = 0,
-    BLUE,
-    GREEN,
-    CYAN,
-    RED,
-    MAGENTA,
-    BROWN,
-    WHITE
+    VGA_BLACK = 0,
+    VGA_BLUE,
+    VGA_GREEN,
+    VGA_CYAN,
+    VGA_RED,
+    VGA_MAGENTA,
+    VGA_BROWN,
+    VGA_WHITE
 } color_enum_t;
 
 
@@ -41,8 +41,8 @@ extern void vga_print_char_at(char character, int row, int column, attribute_str
 /*
  * String print functions 
  */
-extern void vga_print_string(char *string);
-extern void vga_print_string_at(unsigned char *string, int row, int column);
+extern void vga_print_string(const char *string, attribute_struct_t attribute_struct);
+extern void vga_print_string_at(const unsigned char *string, int row, int column, attribute_struct_t attribute_struct);
 
 /*
  * Screen functions
