@@ -1,44 +1,46 @@
 #The derp-kernel Makefile used for building the kernel and bootloader
 
-BOOTLOADER_SOURCES = boot/boot.asm \
+BOOTLOADER_SOURCES = boot/bootloader.asm \
 		     boot/print_string/print_string_real_mode.asm \
 		     boot/print_string/print_string_protected_mode.asm \
 		     boot/gdt/gdt.asm \
 		     boot/gdt/switch_to_protected_mode.asm \
 			 boot/disk_io/disk_read.asm
 
-KERNEL_SOURCES = kernel/kernel.c \
-				 kernel/kernel_entry.asm
+KERNEL_SOURCES = $(wildcard kernel/*.c)
+KERNEL_HEADERS = $(wildcard kernel/*.h)
+KERNEL_OBJECTS = ${KERNEL_SOURCES:.c=.o}
 
-DRIVERS_SOURCES = drivers/vga/text_mode.c 
+DRIVERS_SOURCES = $(wildcard drivers/*/*.c)
+DRIVERS_HEADERS = $(wildcard drivers/*/*.h)
+DRIVERS_OBJECTS = ${DRIVERS_SOURCES:.c=.o}
 
 
-all: bootloader drivers kernel image
+all: image
 
-bootloader: $(BOOTLOADER_SOURCES)
-	    nasm boot/boot.asm -f bin -o boot/boot.bin
+kernel/kernel.bin: kernel/kernel_entry.o ${KERNEL_OBJECTS} ${DRIVERS_OBJECTS}
+		ld -o $@ -m elf_i386 -Ttext 0x1000 $^ --oformat binary
 
-kernel_entry: $(KERNEL_SOURCES)
-		nasm kernel/kernel_entry.asm -f elf -o kernel/kernel_entry.o
+%.o : %.c ${KERNEL_HEADERS} ${DRIVERS_HEADERS}
+		gcc -m32 -ffreestanding -c $< -o $@
 
-kernel_object: $(KERNEL_SOURCES)
-		gcc -m32 -ffreestanding -c kernel/kernel.c -o kernel/kernel.o
+%.o : %.asm 
+		nasm $< -f elf -o $@
 
-kernel: kernel_object kernel_entry
-		ld -o kernel/kernel.bin -m elf_i386 -Ttext 0x1000 kernel/kernel_entry.o drivers/vga/text_mode.o kernel/kernel.o --oformat binary
+%.bin : %.asm
+		nasm $< -f bin -o $@
 
-drivers: $(DRIVERS_SOURCES)
-		gcc -m32 -ffreestanding -c drivers/vga/text_mode.c -o drivers/vga/text_mode.o
-
-image:	bootloader kernel 
-		cat boot/boot.bin kernel/kernel.bin > image/os-image.img
+image:	boot/bootloader.bin kernel/kernel.bin 
+		cat $^ > image/os-image.img
 		dd if=/dev/zero bs=1 count=1000000 >> image/os-image.img
 
 test:	all
 		qemu-kvm image/os-image.img
 
 clean:
-		rm boot/*.bin
-		rm kernel/*.bin
-		rm kernel/*o
-		rm image/os-image.img
+		rm -fr boot/*.bin
+		rm -fr kernel/*.bin
+		rm -fr kernel/*o
+		rm -fr drivers/vga/*.o
+		rm -fr drivers/port_io/*.o
+		rm -fr image/os-image.img

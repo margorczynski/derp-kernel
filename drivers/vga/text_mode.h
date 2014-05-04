@@ -1,11 +1,9 @@
-#ifndef __VGA_TEXT_MODE_H__
-#define __VGA_TEXT_MODE_H__
+#ifndef __DRIVERS_VGA_TEXT_MODE_H__
+#define __DRIVERS_VGA_TEXT_MODE_H__
 
-#define MAX_ROWS             25
-#define MAX_COLUMNS          80
+#define MAX_ROW             25
+#define MAX_COLUMN          80
 
-#define CONTROLLER_ADDRESS_REGISTER 0x3D4
-#define CONTROLLER_DATA_REGISTER    0x3D5
 
 /*
  * Character attribute bitfield
@@ -55,6 +53,7 @@ extern void vga_clear_screen(void);
  * Cursor functions
  */
 extern void vga_set_cursor_position(int row, int column);
-extern int vga_get_cursor_position(void);
+extern int vga_get_cursor_position_row(void);
+extern int vga_get_cursor_position_column(void);
 
 #endif

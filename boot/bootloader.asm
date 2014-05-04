@@ -38,7 +38,7 @@ load_kernel:
     call print_string_real_mode ;
 
     mov bx, KERNEL_OFFSET       ; this is the offset at which the kernel will be load into memory
-    mov dh, 1                   ; read 15 sectors after the boot sector
+    mov dh, 10                  ; read 15 sectors after the boot sector
     mov dl, [BOOT_DRIVE]        ; from the drive the BIOS started booting
     call disk_read              ; call the function to read it into memory
 
