@@ -8,7 +8,7 @@
 #define CONTROLLER_DATA_REGISTER    0x3D5
 
 static int _vga_get_video_memory_offset(int row, int column);
-static char _vga_get_attribute_byte(attribute_struct_t attribute_struct);
+static unsigned char _vga_get_attribute_byte(attribute_struct_t attribute_struct);
 static int _vga_get_cursor_position_offset(void);
 
 
@@ -199,7 +199,7 @@ int vga_get_cursor_position_column(void)
  *
  * @return the offset in the video memory of the position
  */
-static int _vga_get_video_memory_offset(int row, int column)
+static inline int _vga_get_video_memory_offset(int row, int column)
 {
     if(row < 0 || column < 0 || row >= MAX_ROW || column >= MAX_COLUMN)
     {
@@ -210,11 +210,11 @@ static int _vga_get_video_memory_offset(int row, int column)
 }
 
 /*
- * Translate the attribute structure to a single byte written in memory
+ * Translate the attribute structure to a single byte written in the video memory
  *
  * @return the attribute byte that represents the structure
  */
-static char _vga_get_attribute_byte(attribute_struct_t attribute_struct)
+static inline unsigned char _vga_get_attribute_byte(attribute_struct_t attribute_struct)
 {
     char attribute_byte = 0;
 
@@ -231,7 +231,7 @@ static char _vga_get_attribute_byte(attribute_struct_t attribute_struct)
  *
  * @return the cursor offset (in the video memory)
  */
-static int _vga_get_cursor_position_offset(void)
+static inline int _vga_get_cursor_position_offset(void)
 {
     const short CURSOR_POSITION_HIGH_BYTE_REGISTER = 14;
     const short CURSOR_POSITION_LOW_BYTE_REGISTER  = 15;
