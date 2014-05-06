@@ -2,10 +2,33 @@
  * The main source file containing the entry point (the function/symbol called by the bootloader) of the kernel
  */
 
+#include <stdbool.h>
+
 #include "../drivers/vga/text_mode.h"
+#include "idt/idt.h"
+
+__attribute__((naked)) void interrupt_handler()
+{
+    asm ("pusha");
+    attribute_struct_t attribute_struct;
+
+    attribute_struct.character_color  = 0x7;
+    attribute_struct.intensity        = 0x1;
+    attribute_struct.background_color = 0x0;
+    attribute_struct.blinking         = 0x0;
+    vga_print_string("EXCEPTION", attribute_struct);
+         
+    while(true){};
+        
+    asm (
+        "popa" \
+        "iret"
+    );
+}
 
 void kernel_main(void)
 {
+    int a;
     attribute_struct_t attribute_struct;
 
     attribute_struct.character_color  = 0x7;
@@ -23,4 +46,11 @@ void kernel_main(void)
     //vga_print_char('X', attribute_struct);
     //vga_print_char('\n', attribute_struct);
     //vga_print_char('X', attribute_struct);
+    idt_create_interrupt_descriptor_table_descriptor();
+
+    idt_create_interrupt_service_routine(0, interrupt_handler, true, RING_0);
+
+    idt_load_interrupt_descriptor_table_descriptor();
+
+    a = 1/0;
 }
