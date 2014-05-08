@@ -25,7 +25,7 @@ kernel/kernel.bin: kernel/kernel_entry.o ${KERNEL_OBJECTS} ${KERNEL_ASSEMBLY_OBJ
 		ld -o $@ -m elf_i386 -Ttext 0x1000 $^ --oformat binary
 
 %.o : %.c ${KERNEL_HEADERS} ${DRIVERS_HEADERS}
-		gcc -m32 -ffreestanding -c $< -o $@
+		clang -m32 -ffreestanding -c $< -o $@
 
 %.o : %.asm 
 		nasm $< -f elf -o $@

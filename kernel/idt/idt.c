@@ -1,16 +1,7 @@
 #include "idt.h"
 
 /*
- * The descriptor structure of the IDT
- */
-static struct __attribute__((packed))
-{
-    uint16_t idt_size;    //the size (int bytes) of the IDT
-    uint32_t idt_address; //the address of the IDT's first entry
-} _idt_descriptor_struct_s;
-
-/*
- * The structure type that represents the IDT's descriptor entries
+ * The structure type that represents the IDT's entries (descriptors)
  */
 typedef struct __attribute__((packed))
 {
@@ -27,44 +18,32 @@ typedef struct __attribute__((packed))
 static _idt_entry_struct_t _interrupt_descriptor_table[256];
 
 /*
- * The global symbol with the address of the IDT descriptor
- * This is used by the assembly to load it using the 'LIDT' instruction
- * as it cannot be done in inline assembly
- */
-extern uint32_t idt_descriptor_address = (uint32_t) &_idt_descriptor_struct_s;
-
-/*
  * The external symbol of the label that contains the code that will load the IDT
+ * Takes the address and size of the IDT as arguments (in that order)
  */
-extern void idt_asm_load_interrupt_descriptor_table_descriptor(void);
+extern void idt_asm_load_interrupt_descriptor_table_descriptor(uint32_t, uint16_t);
 
-
-/*
- * Create the IDT descriptor to be used by the CPU LIDT instruction
- */
-void idt_create_interrupt_descriptor_table_descriptor(void)
-{
-    _idt_descriptor_struct_s.idt_size    = (sizeof(_idt_entry_struct_t) * 256) - 1;
-    _idt_descriptor_struct_s.idt_address = (uint32_t) _interrupt_descriptor_table;
-}
 
 /*
  * Load the IDT descriptor into the CPU using the LIDT instruction
  */
-void idt_load_interrupt_descriptor_table_descriptor(void)
+void idt_load_interrupt_descriptor_table(void)
 {
     //We need to load the descriptor of the IDT directly in Assembly
-    idt_asm_load_interrupt_descriptor_table_descriptor();
+    idt_asm_load_interrupt_descriptor_table(_interrupt_descriptor_table, sizeof(_interrupt_descriptor_table));
 }
 
-void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, bool is_present, idt_dpl_enum_t minimum_descriptor_privilage_level)
+/*
+ * Create an ISR for a specific IRQ number (IDT index)
+ */
+void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level)
 {
     //Dissect the ISR's address into a combination of a lower and higher address
     const uint16_t ADDRESS_LOWER  = (uint16_t) isr_address;
     const uint16_t ADDRESS_HIGHER = (uint16_t) (isr_address >> 16);
 
     //This type attribute represents an interrupt ISR with a custom present state and minium DPL required for calling it
-    const uint8_t TYPE_ATTRIBUTE = (is_present << 8) | (minimum_descriptor_privilage_level << 6) | (0xe);
+    const uint8_t TYPE_ATTRIBUTE = 0x80 | (minimum_descriptor_privilage_level << 6) | (0xe);
 
     //Check if the arguments are correct, if not then exit the function
     if(irq_number > 255 || isr_address < 0)
@@ -77,8 +56,7 @@ void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_addre
 
     _interrupt_descriptor_table[irq_number].zero = 0x0;
 
-    //TODO: Will need to create a new GDT using C with a proper kernel code segment
-    _interrupt_descriptor_table[irq_number].selector = 0x0;
+    _interrupt_descriptor_table[irq_number].selector = 0x08;
 
     _interrupt_descriptor_table[irq_number].type_attribute = TYPE_ATTRIBUTE;
 }

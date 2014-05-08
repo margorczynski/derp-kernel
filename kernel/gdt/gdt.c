@@ -21,16 +21,16 @@ static _gdt_entry_struct_t _global_descriptor_table[3];
 
 /*
  * The external symbol of the label that contains the code that will load the GDT
- * Takes the address and size of the GDT as arguments
+ * Takes the address and size of the GDT as arguments (in that order)
  */
-extern void gdt_asm_load_global_descriptor_table(uint32_t, uint32_t);
+extern void gdt_asm_load_global_descriptor_table(uint32_t, uint16_t);
 
 /*
  * Load the GDT into the CPU using the 'LGDT' instruction
  */
 void gdt_load_global_descriptor_table(void)
 {
-    gdt_asm_load_global_descriptor_table(_global_descriptor_table, sizeof(_global_descriptor_table));
+    gdt_asm_load_global_descriptor_table( _global_descriptor_table, sizeof(_global_descriptor_table));
 }
 
 /*

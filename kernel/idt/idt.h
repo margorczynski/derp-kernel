@@ -18,12 +18,11 @@ typedef enum
 /*
  * IDT creation and loading functions
  */
-void idt_create_interrupt_descriptor_table_descriptor(void);
-void idt_load_interrupt_descriptor_table_descriptor(void);
+void idt_load_interrupt_descriptor_table(void);
 
 /*
  * ISR creation functions
  */
-void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, bool is_present, idt_dpl_enum_t minimum_descriptor_privilage_level);
+void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level);
 
 #endif
