@@ -6,7 +6,7 @@
 /*
  * GDT creation and loading functions
  */
-void gdt_load_global_descirptor_table(void);
+void gdt_load_global_descriptor_table(void);
 
 void gdt_create_flat_layout(void);
 

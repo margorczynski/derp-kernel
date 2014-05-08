@@ -4,13 +4,13 @@
 /*
  * Read/Write byte from/to specified port
  */
-inline unsigned char port_io_read_byte(unsigned short port);
-inline void          port_io_write_byte(unsigned short port, unsigned char data);
+unsigned char port_io_read_byte(unsigned short port);
+void          port_io_write_byte(unsigned short port, unsigned char data);
 
 /*
  * Read/Write word from/to specified port
  */
-inline unsigned short port_io_read_word(unsigned short port);
-inline void           port_io_write_word(unsigned short port, unsigned short word);
+unsigned short port_io_read_word(unsigned short port);
+void           port_io_write_word(unsigned short port, unsigned short word);
 
 #endif

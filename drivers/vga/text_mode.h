@@ -13,7 +13,7 @@ typedef struct
     unsigned char character_color  : 3;
     unsigned char intensity        : 1;
     unsigned char background_color : 3;
-    unsigned char blinking         : 1
+    unsigned char blinking         : 1;
 } attribute_struct_t;
 
 /*
@@ -42,7 +42,7 @@ extern void vga_print_char_at(char character, int row, int column, attribute_str
  * String print functions 
  */
 extern void vga_print_string(const char *string, attribute_struct_t attribute_struct);
-extern void vga_print_string_at(const unsigned char *string, int row, int column, attribute_struct_t attribute_struct);
+extern void vga_print_string_at(const char *string, int row, int column, attribute_struct_t attribute_struct);
 
 /*
  * Screen functions

@@ -45,6 +45,7 @@ clean:
 		rm -fr kernel/*.bin
 		rm -fr kernel/*.o
 		rm -fr kernel/idt/*.o
+		rm -fr kernel/gdt/*.o
 		rm -fr drivers/vga/*.o
 		rm -fr drivers/port_io/*.o
 		rm -fr image/os-image.img

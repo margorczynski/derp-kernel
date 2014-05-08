@@ -21,7 +21,7 @@ static _idt_entry_struct_t _interrupt_descriptor_table[256];
  * The external symbol of the label that contains the code that will load the IDT
  * Takes the address and size of the IDT as arguments (in that order)
  */
-extern void idt_asm_load_interrupt_descriptor_table_descriptor(uint32_t, uint16_t);
+extern void idt_asm_load_interrupt_descriptor_table(uint32_t, uint16_t);
 
 
 /*
@@ -30,7 +30,7 @@ extern void idt_asm_load_interrupt_descriptor_table_descriptor(uint32_t, uint16_
 void idt_load_interrupt_descriptor_table(void)
 {
     //We need to load the descriptor of the IDT directly in Assembly
-    idt_asm_load_interrupt_descriptor_table(_interrupt_descriptor_table, sizeof(_interrupt_descriptor_table));
+    idt_asm_load_interrupt_descriptor_table((uint32_t) _interrupt_descriptor_table, sizeof(_interrupt_descriptor_table));
 }
 
 /*
@@ -46,7 +46,7 @@ void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_addre
     const uint8_t TYPE_ATTRIBUTE = 0x80 | (minimum_descriptor_privilage_level << 6) | (0xe);
 
     //Check if the arguments are correct, if not then exit the function
-    if(irq_number > 255 || isr_address < 0)
+    if(irq_number > 255 || isr_address == 0)
     {
         return;
     }

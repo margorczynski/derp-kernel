@@ -101,7 +101,7 @@ void vga_print_string(const char *string, attribute_struct_t attribute_struct)
  * @param column the column at which the string will be printed (see description)
  * @param attribute_struct the structure with the string attribute
  */
-void vga_print_string_at(const unsigned char *string, int row, int column, attribute_struct_t attribute_struct)
+void vga_print_string_at(const char *string, int row, int column, attribute_struct_t attribute_struct)
 {
     int i;
 

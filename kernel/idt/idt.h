@@ -1,7 +1,6 @@
 #ifndef __KERNEL_IDT_H__
 #define __KERNEL_IDT_H__
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /*
