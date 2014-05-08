@@ -7,9 +7,9 @@ BOOTLOADER_SOURCES = boot/bootloader.asm \
 		     boot/gdt/switch_to_protected_mode.asm \
 			 boot/disk_io/disk_read.asm
 
-KERNEL_ASSEMBLY = $(wildcard kernel/idt/*.asm)
-KERNEL_SOURCES  = $(wildcard kernel/*.c kernel/idt/*.c)
-KERNEL_HEADERS  = $(wildcard kernel/*.h kernel/idt/*.h)
+KERNEL_ASSEMBLY = $(wildcard kernel/idt/*.asm kernel/gdt/*.asm)
+KERNEL_SOURCES  = $(wildcard kernel/*.c kernel/idt/*.c kernel/gdt/*.c)
+KERNEL_HEADERS  = $(wildcard kernel/*.h kernel/idt/*.h kernel/gdt/*.h)
 
 DRIVERS_SOURCES = $(wildcard drivers/*/*.c)
 DRIVERS_HEADERS = $(wildcard drivers/*/*.h)
