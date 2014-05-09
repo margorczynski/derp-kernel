@@ -12,6 +12,8 @@ typedef struct __attribute__((packed))
     uint16_t address_higher;
 } _idt_entry_struct_t;
 
+static void _idt_create_interrupt_service_routine(uint8_t idt_index, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level);
+
 /*
  * The IDT that consists of 256 entries (the number of interrupts handled)
  */
@@ -33,10 +35,20 @@ void idt_load_interrupt_descriptor_table(void)
     idt_asm_load_interrupt_descriptor_table((uint32_t) _interrupt_descriptor_table, sizeof(_interrupt_descriptor_table));
 }
 
+void idt_create_exception_isr(cpu_exception_enum_t exception_index, uint32_t isr_address)
+{
+    _idt_create_interrupt_service_routine(exception_index, isr_address, RING_0);
+}
+
+void idt_create_interrupt_isr(hardware_interrupt_enum_t interrupt_index, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level)
+{
+    _idt_create_interrupt_service_routine(interrupt_index, isr_address, minimum_descriptor_privilage_level);
+}
+
 /*
  * Create an ISR for a specific IRQ number (IDT index)
  */
-void idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level)
+static void _idt_create_interrupt_service_routine(uint8_t irq_number, uint32_t isr_address, idt_dpl_enum_t minimum_descriptor_privilage_level)
 {
     //Dissect the ISR's address into a combination of a lower and higher address
     const uint16_t ADDRESS_LOWER  = (uint16_t) isr_address;
