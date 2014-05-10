@@ -8,8 +8,8 @@ BOOTLOADER_SOURCES = boot/bootloader.asm \
 			 boot/disk_io/disk_read.asm
 
 KERNEL_ASSEMBLY = $(wildcard kernel/idt/*.asm kernel/gdt/*.asm)
-KERNEL_SOURCES  = $(wildcard kernel/*.c kernel/idt/*.c kernel/gdt/*.c)
-KERNEL_HEADERS  = $(wildcard kernel/*.h kernel/idt/*.h kernel/gdt/*.h)
+KERNEL_SOURCES  = $(wildcard kernel/*.c kernel/idt/*.c kernel/gdt/*.c kernel/isr/*.c kernel/isr/exceptions/*.c kernel/isr/interrupts/*.c)
+KERNEL_HEADERS  = $(wildcard kernel/*.h kernel/idt/*.h kernel/gdt/*.h kernel/isr/*.h kernel/isr/exceptions/*.h kernel/isr/interrupts/*.h)
 
 DRIVERS_SOURCES = $(wildcard drivers/*/*.c)
 DRIVERS_HEADERS = $(wildcard drivers/*/*.h)

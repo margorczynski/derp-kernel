@@ -50,7 +50,7 @@ typedef enum
  */
 typedef enum
 {
-    INTERRUPT_KEYBOARD = 0
+    INTERRUPT_KEYBOARD = 33
 } hardware_interrupt_enum_t;
 
 /*
