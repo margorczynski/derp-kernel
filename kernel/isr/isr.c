@@ -1,10 +1,11 @@
 #include "isr.h"
 #include "exceptions/exceptions.h"
+#include "interrupts/interrupts.h"
 #include "../idt/idt.h"
 
 /*
  * Create ISR's for all the available CPU exceptions
- * The header and source with all the exception functions is in the 'exception/' directory
+ * The header and source with all the exception functions is in the 'exceptions/' directory
  */
 void isr_create_exception_isrs(void)
 {
@@ -31,6 +32,26 @@ void isr_create_exception_isrs(void)
     idt_create_exception_isr(EXCEPTION_SECURITY_EXCEPTION, (uint32_t) isr_exception_security_exception);
 }
 
+/*
+ * Create ISR's for all the available hardware IRQs
+ * The header and source with all the interrupt functions is in the 'interrupts/' directory
+ */
 void isr_create_interrupt_isrs(void)
 {
+    idt_create_interrupt_isr(INTERRUPT_PROGRAMMABLE_INTERRUPT_TIMER_INTERRUPT, (uint32_t) isr_interrupt_programmable_interrupt_timer_interrupt, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_KEYBOARD_INTERRUPT, (uint32_t) isr_interrupt_keyboard_interrupt, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_CASCADE, (uint32_t) isr_interrupt_cascade, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_COM_2, (uint32_t) isr_interrupt_com_2, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_COM_1, (uint32_t) isr_interrupt_com_1, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_LPT_2, (uint32_t) isr_interrupt_lpt_2, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_FLOPPY_DISK, (uint32_t) isr_interrupt_floppy_disk, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_LPT_1, (uint32_t) isr_interrupt_lpt_1, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_CMOS_REAL_TIME_CLOCK, (uint32_t) isr_interrupt_cmos_real_time_clock, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_FREE_1, (uint32_t) isr_interrupt_free_1, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_FREE_2, (uint32_t) isr_interrupt_free_2, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_FREE_3, (uint32_t) isr_interrupt_free_3, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_PS_2_MOUSE, (uint32_t) isr_interrupt_ps_2_mouse, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_FPU_COPROCESSOR, (uint32_t) isr_interrupt_fpu_coprocessor, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_PRIMARY_ATA_HARD_DISK, (uint32_t) isr_interrupt_primary_ata_hard_disk, RING_0);
+    idt_create_interrupt_isr(INTERRUPT_SECONDARY_ATA_HARD_DISK, (uint32_t) isr_interrupt_secondary_ata_hard_disk, RING_0);
 }

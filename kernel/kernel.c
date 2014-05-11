@@ -38,6 +38,7 @@ void kernel_main(void)
 
     //Create the ISR's and load the IDT
     isr_create_exception_isrs();
+    isr_create_interrupt_isrs();
     idt_create_interrupt_isr(33, (uint32_t) keyboard_interrupt, RING_3);
     idt_load_interrupt_descriptor_table();
         vga_print_string("IDT loading: OK\n", attribute_white_on_black);

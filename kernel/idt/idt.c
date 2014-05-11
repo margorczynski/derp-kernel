@@ -34,7 +34,7 @@ extern void idt_asm_load_interrupt_descriptor_table(uint32_t, uint16_t);
 void idt_load_interrupt_descriptor_table(void)
 {
     //We need to load the descriptor of the IDT directly in Assembly
-    idt_asm_load_interrupt_descriptor_table((uint32_t) _interrupt_descriptor_table, sizeof(_interrupt_descriptor_table));
+    idt_asm_load_interrupt_descriptor_table((uint32_t) _interrupt_descriptor_table, sizeof(_interrupt_descriptor_table) - 1);
 
     _idt_remap_pic();
 

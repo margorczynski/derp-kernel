@@ -50,7 +50,24 @@ typedef enum
  */
 typedef enum
 {
-    INTERRUPT_KEYBOARD = 33
+    //Master PIC
+    INTERRUPT_PROGRAMMABLE_INTERRUPT_TIMER_INTERRUPT = 32,
+    INTERRUPT_KEYBOARD_INTERRUPT                     = 33,
+    INTERRUPT_CASCADE                                = 34,
+    INTERRUPT_COM_2                                  = 35,
+    INTERRUPT_COM_1                                  = 36,
+    INTERRUPT_LPT_2                                  = 37,
+    INTERRUPT_FLOPPY_DISK                            = 38,
+    INTERRUPT_LPT_1                                  = 39,
+    //Slave PIC
+    INTERRUPT_CMOS_REAL_TIME_CLOCK                   = 40,
+    INTERRUPT_FREE_1                                 = 41,
+    INTERRUPT_FREE_2                                 = 42,
+    INTERRUPT_FREE_3                                 = 43,
+    INTERRUPT_PS_2_MOUSE                             = 44,
+    INTERRUPT_FPU_COPROCESSOR                        = 45,
+    INTERRUPT_PRIMARY_ATA_HARD_DISK                  = 46,
+    INTERRUPT_SECONDARY_ATA_HARD_DISK                = 47,
 } hardware_interrupt_enum_t;
 
 /*

@@ -30,7 +30,7 @@ extern void gdt_asm_load_global_descriptor_table(uint32_t, uint16_t);
  */
 void gdt_load_global_descriptor_table(void)
 {
-    gdt_asm_load_global_descriptor_table( (uint32_t) _global_descriptor_table, sizeof(_global_descriptor_table));
+    gdt_asm_load_global_descriptor_table( (uint32_t) _global_descriptor_table, sizeof(_global_descriptor_table) - 1);
 }
 
 /*
