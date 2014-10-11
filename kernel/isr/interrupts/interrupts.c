@@ -22,8 +22,6 @@ __attribute__((naked)) void isr_interrupt_programmable_interrupt_timer_interrupt
     __asm__ __volatile__ ("cli");
     asm ("pushal");
 
-    vga_print_char('x', TEXT_ATTRIBUTE_WHITE_ON_BLACK);
-
     port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     asm ("popal");
@@ -38,10 +36,9 @@ __attribute__((naked)) void isr_interrupt_keyboard_interrupt(void)
     char buf[10];
 
     vga_clear_screen();
-    //vga_print_string("IRQ 1: Keyboard\n", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
-    //vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+    vga_print_string("IRQ 1: Keyboard\n", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
-    vga_print_string(itoa(4123, buf), TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+    vga_print_string(itoa(port_io_read_byte(0x60),buf), TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 

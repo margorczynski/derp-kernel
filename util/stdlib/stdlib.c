@@ -37,7 +37,7 @@ char* itoa(int value, char* destination)
     {
         int current_leading_number = absolute_value/pow(10, value_char_size - 1);
 
-        current_digit = current_leading_number - previous_leading_number;
+        current_digit = current_leading_number - (previous_leading_number * 10);
         destination[destination_index] = digit_ascii_table[current_digit];
 
         previous_leading_number = current_leading_number;

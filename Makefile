@@ -53,3 +53,6 @@ clean:
 		rm -fr drivers/vga/*.o
 		rm -fr drivers/port_io/*.o
 		rm -fr image/os-image.img
+		rm -fr util/math/*.o
+		rm -fr util/stdlib/*.o
+		rm -fr util/string/*.o

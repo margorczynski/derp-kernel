@@ -10,7 +10,7 @@ int pow(int base, unsigned int exponent)
         return 1;
     }
 
-    for(i = 0; i < exponent; ++i)
+    for(i = 0; i < (exponent - 1); ++i)
     {
         result *= base;
     }
