@@ -14,14 +14,18 @@ KERNEL_HEADERS  = $(wildcard kernel/*.h kernel/idt/*.h kernel/gdt/*.h kernel/isr
 DRIVERS_SOURCES = $(wildcard drivers/*/*.c)
 DRIVERS_HEADERS = $(wildcard drivers/*/*.h)
 
+UTIL_SOURCES = $(wildcard util/*/*.c)
+UTIL_HEADERS = $(wildcard util/*/*.h)
+
 KERNEL_OBJECTS          = ${KERNEL_SOURCES:.c=.o}
 KERNEL_ASSEMBLY_OBJECTS = $(KERNEL_ASSEMBLY:.asm=.o)
 DRIVERS_OBJECTS         = ${DRIVERS_SOURCES:.c=.o}
+UTIL_OBJECTS            = ${UTIL_SOURCES:.c=.o}
 
 
 all: image
 
-kernel/kernel.bin: kernel/kernel_entry.o ${KERNEL_OBJECTS} ${KERNEL_ASSEMBLY_OBJECTS} ${DRIVERS_OBJECTS}
+kernel/kernel.bin: kernel/kernel_entry.o ${KERNEL_OBJECTS} ${KERNEL_ASSEMBLY_OBJECTS} ${DRIVERS_OBJECTS} ${UTIL_OBJECTS}
 		ld -o $@ -m elf_i386 -Ttext 0x1000 $^ --oformat binary
 
 %.o : %.c ${KERNEL_HEADERS} ${DRIVERS_HEADERS}

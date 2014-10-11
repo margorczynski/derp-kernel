@@ -15,18 +15,6 @@ static const attribute_struct_t attribute_white_on_black =
     .blinking         = 0
 };
 
-__attribute__((naked)) void keyboard_interrupt(void)
-{
-    asm ("pushal");
-
-    vga_clear_screen();
-    vga_print_string_at("Interrupt, IRQ 1, Keyboard", 1, 1, attribute_white_on_black);
-    for(;;) {}
-     
-    asm ("popal");
-    asm ("iret");
-}
-
 void kernel_main(void)
 {
     vga_clear_screen();
@@ -39,7 +27,6 @@ void kernel_main(void)
     //Create the ISR's and load the IDT
     isr_create_exception_isrs();
     isr_create_interrupt_isrs();
-    idt_create_interrupt_isr(33, (uint32_t) keyboard_interrupt, RING_3);
     idt_load_interrupt_descriptor_table();
         vga_print_string("IDT loading: OK\n", attribute_white_on_black);
 

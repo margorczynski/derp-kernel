@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "../../../drivers/vga/text_mode.h"
 #include "../../../drivers/port_io/port_io.h"
+#include "../../../util/string/string.h"
 
 #define MASTER_PIC_COMMAND_PORT 0x20
 #define SLAVE_PIC_COMMAND_PORT  0xA0
@@ -34,18 +35,21 @@ __attribute__((naked)) void isr_interrupt_keyboard_interrupt(void)
     __asm__ __volatile__ ("cli");
     asm ("pushal");
 
+    char buf[10];
+
     vga_clear_screen();
-    vga_print_string("IRQ 1: Keyboard\n", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
-    vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+    //vga_print_string("IRQ 1: Keyboard\n", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+    //vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+
+    vga_print_string(itoa(4123, buf), TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
-
-    for(;;){}
 
     asm ("popal");
     asm ("iret");
 }
 
+//This will never be raised, used for Master/Slave PIC communication
 __attribute__((naked)) void isr_interrupt_cascade(void)
 {
     __asm__ __volatile__ ("cli");
@@ -160,6 +164,7 @@ __attribute__((naked)) void isr_interrupt_cmos_real_time_clock(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -177,6 +182,7 @@ __attribute__((naked)) void isr_interrupt_free_1(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -194,6 +200,7 @@ __attribute__((naked)) void isr_interrupt_free_2(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -211,6 +218,7 @@ __attribute__((naked)) void isr_interrupt_free_3(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -228,6 +236,7 @@ __attribute__((naked)) void isr_interrupt_ps_2_mouse(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -245,6 +254,7 @@ __attribute__((naked)) void isr_interrupt_fpu_coprocessor(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -262,6 +272,7 @@ __attribute__((naked)) void isr_interrupt_primary_ata_hard_disk(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
@@ -279,6 +290,7 @@ __attribute__((naked)) void isr_interrupt_secondary_ata_hard_disk(void)
     vga_print_string("Halting...", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
 
     port_io_write_byte(SLAVE_PIC_COMMAND_PORT, 0x20);
+    port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
     for(;;){}
 
