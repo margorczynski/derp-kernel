@@ -2,6 +2,7 @@
 #include "../../../drivers/vga/text_mode.h"
 #include "../../../drivers/port_io/port_io.h"
 #include "../../../util/string/string.h"
+#include "../../../util/stdlib/stdlib.h"
 
 #define MASTER_PIC_COMMAND_PORT 0x20
 #define SLAVE_PIC_COMMAND_PORT  0xA0
