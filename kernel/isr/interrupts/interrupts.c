@@ -4,6 +4,8 @@
 #include "../../../util/string/string.h"
 #include "../../../util/stdlib/stdlib.h"
 
+#include "../../../drivers/keyboard/keyboard.h"
+
 #define MASTER_PIC_COMMAND_PORT 0x20
 #define SLAVE_PIC_COMMAND_PORT  0xA0
 
@@ -34,12 +36,7 @@ __attribute__((naked)) void isr_interrupt_keyboard_interrupt(void)
     __asm__ __volatile__ ("cli");
     asm ("pushal");
 
-    char buf[10];
-
-    vga_clear_screen();
-    vga_print_string("IRQ 1: Keyboard\n", TEXT_ATTRIBUTE_WHITE_ON_BLACK);
-
-    vga_print_string(itoa(port_io_read_byte(0x60),buf), TEXT_ATTRIBUTE_WHITE_ON_BLACK);
+    keyboard_interrupt_event_handler();
 
     port_io_write_byte(MASTER_PIC_COMMAND_PORT, 0x20);
 
