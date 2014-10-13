@@ -42,6 +42,7 @@ enum _KEYBOARD_CONTROLLER_STATUS_REGISTER_MASK_ENUM
     KEYBOARD_CONTROLLER_STATUS_REGISTER_MASK_PARITY_ERROR          = 0x80
 };
 
+//TODO: Some of the keys are missing (with the double scan code?)
 /*
  * The scan code set of the keyboard.
  */
@@ -300,30 +301,41 @@ enum _KEYBOARD_SCAN_CODE_SET
     F11_RELEASED = F11_PRESSED + 0x80,
 
     F12_PRESSED  = 0x58,
-    F12_RELEASED = F12_PRESSED + 0x80
+    F12_RELEASED = F12_PRESSED + 0x80,
+
+    //The keys with the double scan codes are missing for now
 };
 
 static struct
 {
     bool is_keyboard_enabled;
 
+    //Lock key activation status
     bool is_scroll_lock_active;
-    bool is_shift_lock_active;
+    bool is_caps_lock_active;
     bool is_num_lock_active;
 
+    //Modifier key status
     bool is_ctrl_pressed;
     bool is_shift_pressed;
     bool is_alt_pressed;
+
+    char current_key_code;
 
 }_keyboard_state_struct_s;
 
 
 //Controller port functions
-uint8_t _keyboard_controller_read_status(void);
-void    _keyboard_controller_send_status(uint8_t command);
+static uint8_t _keyboard_controller_read_status(void);
+static void    _keyboard_controller_send_status(uint8_t command);
 //Encoder port functions
-uint8_t _keyboard_encoder_read_input_buffer(void);
-void    _keyboard_encoder_send_status(uint8_t command);
+static uint8_t _keyboard_encoder_read_input_buffer(void);
+static void    _keyboard_encoder_send_status(uint8_t command);
+//Change keyboard state functions
+static void _keyboard_set_lock_key_state(uint8_t scan_code);
+static void _keyboard_set_modifier_key_state(uint8_t scan_code);
+//Change the current key code function
+static void _keyboard_set_current_key_code(uint8_t scan_code);
 
 
 /*
@@ -333,17 +345,23 @@ void    _keyboard_encoder_send_status(uint8_t command);
 void keyboard_interrupt_event_handler(void)
 {
     //TODO:Generate a proper key code and set the keyboard state if needed
-    unsigned char scan_code;
+    uint8_t scan_code;
 
     scan_code = port_io_read_byte(KEYBOARD_ENCODER_READ_INPUT_BUFFER_PORT);
+
+    //Change the state if needed
+    _keyboard_set_lock_key_state(scan_code);
+    _keyboard_set_modifier_key_state(scan_code);
 }
+
+//TODO: Needs a function for initializing the driver?
 
 /*
  * Reads the status byte from the keyboard controller.
  *
  * @return The status byte of the keyboard controller.
  */
-uint8_t _keyboard_controller_read_status(void)
+static uint8_t _keyboard_controller_read_status(void)
 {
     return port_io_read_byte(KEYBOARD_CONTROLLER_STATUS_REGISTER_PORT); 
 }
@@ -353,7 +371,7 @@ uint8_t _keyboard_controller_read_status(void)
  *
  * @param command The command byte that will be sent to the controller command port.
  */
-void _keyboard_controller_send_status(uint8_t command)
+static void _keyboard_controller_send_status(uint8_t command)
 {
     while( (_keyboard_controller_read_status() & KEYBOARD_CONTROLLER_STATUS_REGISTER_MASK_INPUT_BUFFER) )
     {
@@ -368,7 +386,7 @@ void _keyboard_controller_send_status(uint8_t command)
  *
  * @return A byte from the keyboard encoder input buffer.
  */
-uint8_t _keyboard_encoder_read_input_buffer(void)
+static uint8_t _keyboard_encoder_read_input_buffer(void)
 {
     return port_io_read_byte(KEYBOARD_ENCODER_READ_INPUT_BUFFER_PORT); 
 }
@@ -378,7 +396,7 @@ uint8_t _keyboard_encoder_read_input_buffer(void)
  *
  * @param command The command byte that will be sent to the encoder command port.
  */
-void _keyboard_encoder_send_status(uint8_t command)
+static void _keyboard_encoder_send_status(uint8_t command)
 {
     while( (_keyboard_controller_read_status() & KEYBOARD_CONTROLLER_STATUS_REGISTER_MASK_INPUT_BUFFER) )
     {
@@ -386,4 +404,62 @@ void _keyboard_encoder_send_status(uint8_t command)
     }
 
     port_io_write_byte(KEYBOARD_ENCODER_SEND_COMMAND_PORT, command);
+}
+
+/*
+ * Analyzes the scan code and changes the state of the lock keys if needed.
+ *
+ * @param scan_code The scan code byte received from the keyboard.
+ */
+static void _keyboard_set_lock_key_state(uint8_t scan_code)
+{
+    switch(scan_code)
+    {
+        case NUM_LOCK_PRESSED:
+            _keyboard_state_struct_s.is_num_lock_active = !_keyboard_state_struct_s.is_num_lock_active;
+        case CAPS_LOCK_PRESSED:
+            _keyboard_state_struct_s.is_caps_lock_active = !_keyboard_state_struct_s.is_caps_lock_active;
+        case SCROLL_LOCK_PRESSED:
+            _keyboard_state_struct_s.is_scroll_lock_active = !_keyboard_state_struct_s.is_scroll_lock_active;
+    }
+}
+
+/*
+ * Analyzes the scan code and changes the state of the modifier keys if needed.
+ *
+ * @param scan_code The scan code byte received from the keyboard.
+ */
+static void _keyboard_set_modifier_key_state(uint8_t scan_code)
+{
+    switch(scan_code)
+    {
+        case LEFT_SHIFT_PRESSED:
+            _keyboard_state_struct_s.is_shift_pressed = true;
+        case RIGHT_SHIFT_PRESSED:
+            _keyboard_state_struct_s.is_shift_pressed = true;
+        case LEFT_ALT_PRESSED:
+            _keyboard_state_struct_s.is_alt_pressed = true;
+        case LEFT_CTRL_PRESSED:
+            _keyboard_state_struct_s.is_ctrl_pressed = true;
+
+        //TODO: This may fail when two of the same group are pressed at the same time but one is released after another
+        case LEFT_SHIFT_RELEASED:
+            _keyboard_state_struct_s.is_shift_pressed = false;
+        case RIGHT_SHIFT_RELEASED:
+            _keyboard_state_struct_s.is_shift_pressed = false;
+        case LEFT_ALT_RELEASED:
+            _keyboard_state_struct_s.is_alt_pressed = false;
+        case LEFT_CTRL_RELEASED:
+            _keyboard_state_struct_s.is_ctrl_pressed = false;
+    }
+}
+
+/*
+ * Analyzes the scan code and changes the current key code if needed.
+ *
+ * @param scan_code The scan code byte received from the keyboard.
+ */
+static void _keyboard_set_current_key_code(uint8_t scan_code)
+{
+    //TODO: Needs to be written
 }
