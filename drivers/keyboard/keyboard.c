@@ -3,7 +3,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "../driver.h"
 #include "../port_io/port_io.h"
+#include "../../util/string/string.h"
 
 /*
  * The adress of the keyboard encoder port.
@@ -320,8 +322,7 @@ static struct
     bool is_shift_pressed;
     bool is_alt_pressed;
 
-    char current_key_code;
-
+    void *keyboard_buffer;
 }_keyboard_state_struct_s;
 
 
@@ -337,6 +338,19 @@ static void _keyboard_set_modifier_key_state(uint8_t scan_code);
 //Change the current key code function
 static void _keyboard_set_current_key_code(uint8_t scan_code);
 
+/*
+ * This function initializes the keyboard and registers the driver in the kernel driver table.
+ */
+bool keyboard_intialize(void)
+{
+    driver_descriptor_struct_t keyboard_driver_descriptor;
+
+    strcpy(keyboard_driver_descriptor.driver_name, "Keyboard");
+    keyboard_driver_descriptor.driver_type = DRIVER_INPUT;
+    //TODO: Get from the system a free memory area for the buffer and set it
+    
+    return driver_register(&keyboard_driver_descriptor);
+}
 
 /*
  * Callback function called by the keyboard ISR everytime a keyboard interrupt occurs.

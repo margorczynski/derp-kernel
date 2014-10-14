@@ -1,5 +1,7 @@
 #include "string.h"
 
+#include "../stdlib/stdlib.h"
+
 size_t strlen(const char *string)
 {
     int length = 0;
@@ -14,3 +16,8 @@ size_t strlen(const char *string)
     return length;
 }
 
+//TODO: Needs to be implemented
+char* strcpy(char *destination, const char *source)
+{
+    return NULL;
+}
