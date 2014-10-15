@@ -16,10 +16,12 @@ typedef enum
 typedef struct
 {
     char               driver_name[MAX_DRIVER_NAME_LENGHT];
-    void               *driver_buffer_memory_area;
     driver_type_enum_t driver_type;
+
+    void *driver_buffer_memory_address;
+    void *driver_buffer_current_address;
 }driver_descriptor_struct_t;
 
-bool driver_register(const driver_descriptor_struct_t *driver_description);
+bool driver_register(driver_descriptor_struct_t *driver_descriptor_address);
 
 #endif
