@@ -6,11 +6,6 @@ size_t strlen(const char *string)
 {
     int length = 0;
 
-    if(!string)
-    {
-     	return 0;
-    }
-
     while(string[length] != '\0') ++length;
 
     return length;
@@ -19,5 +14,12 @@ size_t strlen(const char *string)
 //TODO: Needs to be implemented
 char* strcpy(char *destination, const char *source)
 {
-    return NULL;
+    int i;
+
+    for(i = 0; source[i] != '\0'; ++i)
+    {
+        destination[i] = source[i];    
+    }
+
+    return destination;
 }
