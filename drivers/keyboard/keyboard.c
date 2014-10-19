@@ -7,6 +7,8 @@
 #include "../port_io/port_io.h"
 #include "../../util/string/string.h"
 
+#define KEYBOARD_BUFFER_SIZE 256 
+
 /*
  * The adress of the keyboard encoder port.
  * It can be read to get the encoder input buffer.
@@ -86,8 +88,8 @@ enum _KEYBOARD_SCAN_CODE_SET
     MINUS_PRESSED  = 0x0C,
     MINUS_RELEASED = MINUS_PRESSED + 0x80,
 
-    PLUS_PRESSED  = 0x0D,
-    PLUS_RELEASED = PLUS_PRESSED + 0x80,
+    EQUAL_PRESSED  = 0x0D,
+    EQUAL_RELEASED = EQUAL_PRESSED + 0x80,
 
     BACKSPACE_PRESSED  = 0x0E,
     BACKSPACE_RELEASED = BACKSPACE_PRESSED + 0x80,
@@ -308,6 +310,8 @@ enum _KEYBOARD_SCAN_CODE_SET
     //The keys with the double scan codes are missing for now
 };
 
+static driver_descriptor_struct_t _keyboard_driver_descriptor;
+
 static struct
 {
     bool is_keyboard_enabled;
@@ -322,7 +326,9 @@ static struct
     bool is_shift_pressed;
     bool is_alt_pressed;
 
-    void *keyboard_buffer;
+    //TODO: This seems redundant considering this information is stored in the descriptor?
+    uint8_t keyboard_buffer[KEYBOARD_BUFFER_SIZE];
+    uint8_t keyboard_buffer_current_indice;
 }_keyboard_state_struct_s;
 
 
@@ -335,21 +341,22 @@ static void    _keyboard_encoder_send_status(uint8_t command);
 //Change keyboard state functions
 static void _keyboard_set_lock_key_state(uint8_t scan_code);
 static void _keyboard_set_modifier_key_state(uint8_t scan_code);
-//Change the current key code function
-static void _keyboard_set_current_key_code(uint8_t scan_code);
+//Translate the scan code into a ASCII code
+static char _keyboard_get_ascii_code(uint8_t scan_code);
+//Clear the buffer
+static void _keyboard_clear_buffer(void);
 
 /*
  * This function initializes the keyboard and registers the driver in the kernel driver table.
  */
 bool keyboard_intialize(void)
 {
-    driver_descriptor_struct_t keyboard_driver_descriptor;
-
-    strcpy(keyboard_driver_descriptor.driver_name, "Keyboard");
-    keyboard_driver_descriptor.driver_type = DRIVER_INPUT;
-    //TODO: Get from the system a free memory area for the buffer and set it
+    strcpy(_keyboard_driver_descriptor.driver_name, "Keyboard");
+    _keyboard_driver_descriptor.driver_type                   = DRIVER_INPUT;
+    _keyboard_driver_descriptor.driver_buffer_memory_address  = _keyboard_state_struct_s.keyboard_buffer; 
+    _keyboard_driver_descriptor.driver_buffer_current_address = _keyboard_state_struct_s.keyboard_buffer;
     
-    return driver_register(&keyboard_driver_descriptor);
+    return driver_register(&_keyboard_driver_descriptor);
 }
 
 /*
@@ -360,15 +367,31 @@ void keyboard_interrupt_event_handler(void)
 {
     //TODO:Generate a proper key code and set the keyboard state if needed
     uint8_t scan_code;
+    uint8_t key_code;
 
     scan_code = port_io_read_byte(KEYBOARD_ENCODER_READ_INPUT_BUFFER_PORT);
 
     //Change the state if needed
     _keyboard_set_lock_key_state(scan_code);
     _keyboard_set_modifier_key_state(scan_code);
-}
 
-//TODO: Needs a function for initializing the driver?
+   if( (key_code = _keyboard_get_ascii_code(scan_code)) == '\0' )
+   {
+       //TODO: Not an ASCII code
+   }
+
+   //Clear the buffer if needed
+   if( _keyboard_state_struct_s.keyboard_buffer_current_indice == (KEYBOARD_BUFFER_SIZE - 1) )
+   {
+       _keyboard_clear_buffer();
+   }
+
+   _keyboard_state_struct_s.keyboard_buffer[_keyboard_state_struct_s.keyboard_buffer_current_indice] = key_code;
+
+   //TODO: As in the todo in the state structure
+   ++_keyboard_state_struct_s.keyboard_buffer_current_indice;
+    _keyboard_driver_descriptor.driver_buffer_current_address = (_keyboard_state_struct_s.keyboard_buffer + (_keyboard_state_struct_s.keyboard_buffer_current_indice * (sizeof(uint8_t))));
+}
 
 /*
  * Reads the status byte from the keyboard controller.
@@ -469,11 +492,145 @@ static void _keyboard_set_modifier_key_state(uint8_t scan_code)
 }
 
 /*
- * Analyzes the scan code and changes the current key code if needed.
+ * Translates a scan code to an ASCII code.
+ * This probably should be done using a constant array with scan code as indices for better speed.
  *
  * @param scan_code The scan code byte received from the keyboard.
+ *
+ * @return The ASCII code associated with the scan code. Returns 0 if the scan code can't be translated into a ASCII code.
  */
-static void _keyboard_set_current_key_code(uint8_t scan_code)
+static char _keyboard_get_ascii_code(uint8_t scan_code)
 {
-    //TODO: Needs to be written
+    //This checks if the shift modifier should be used based on the differing state of the shift and caps lock keys
+    const bool is_shift = _keyboard_state_struct_s.is_caps_lock_active ^ _keyboard_state_struct_s.is_caps_lock_active;
+
+    switch(scan_code)
+    {
+        //First row
+        case BACK_TICK_PRESSED:
+            return is_shift ? '~' : '`';
+        case NUM_ONE_PRESSED:
+            return is_shift ? '!' : '1';
+        case NUM_TWO_PRESSED:
+            return is_shift ? '@' : '2';
+        case NUM_THREE_PRESSED:
+            return is_shift ? '#' : '3';
+        case NUM_FOUR_PRESSED:
+            return is_shift ? '$' : '4';
+        case NUM_FIVE_PRESSED:
+            return is_shift ? '%' : '5';
+        case NUM_SIX_PRESSED:
+            return is_shift ? '^' : '6';
+        case NUM_SEVEN_PRESSED:
+            return is_shift ? '&' : '7';
+        case NUM_EIGHT_PRESSED:
+            return is_shift ? '*' : '8';
+        case NUM_NINE_PRESSED:
+            return is_shift ? '(' : '9';
+        case NUM_ZERO_PRESSED:
+            return is_shift ? ')' : '0';
+        case MINUS_PRESSED:
+            return is_shift ? '_' : '-';
+        case EQUAL_PRESSED:
+            return is_shift ? '+' : '=';
+        case BACKSPACE_PRESSED:
+            return '\b';
+
+        //Second row
+        case TAB_PRESSED:
+            return '\t';
+        case Q_PRESSED:
+            return is_shift ? 'Q' : 'q';
+        case W_PRESSED:
+            return is_shift ? 'W' : 'w';
+        case E_PRESSED:
+            return is_shift ? 'E' : 'e';
+        case R_PRESSED:
+            return is_shift ? 'R' : 'r';
+        case T_PRESSED:
+            return is_shift ? 'T' : 't';
+        case Y_PRESSED:
+            return is_shift ? 'Y' : 'y';
+        case U_PRESSED:
+            return is_shift ? 'U' : 'u';
+        case I_PRESSED:
+            return is_shift ? 'I' : 'i';
+        case O_PRESSED:
+            return is_shift ? 'O' : 'o';
+        case P_PRESSED:
+            return is_shift ? 'P' : 'p';
+        case LEFT_BRACKET_PRESSED:
+            return is_shift ? '{' : '[';
+        case RIGHT_BRACKET_PRESSED:
+            return is_shift ? '}' : ']';
+        case SLASH_PRESSED:
+            return is_shift ? '|' : '\\';
+
+        //Third row
+        case A_PRESSED:
+            return is_shift ? 'A' : 'a';
+        case S_PRESSED:
+            return is_shift ? 'S' : 's';
+        case D_PRESSED:
+            return is_shift ? 'D' : 'd';
+        case F_PRESSED:
+            return is_shift ? 'F' : 'f';
+        case G_PRESSED:
+            return is_shift ? 'G' : 'g';
+        case H_PRESSED:
+            return is_shift ? 'H' : 'h';
+        case J_PRESSED:
+            return is_shift ? 'J' : 'j';
+        case K_PRESSED:
+            return is_shift ? 'K' : 'k';
+        case L_PRESSED:
+            return is_shift ? 'L' : 'l';
+        case SEMICOLON_PRESSED:
+            return is_shift ? ':' : ';';
+        case SINGLE_QUOTE_PRESSED: 
+            return is_shift ? '"' : '\'';
+        case ENTER_PRESSED: 
+            return '\n';
+
+        //Fourth row
+        case Z_PRESSED:
+            return is_shift ? 'Z' : 'z';
+        case X_PRESSED:
+            return is_shift ? 'X' : 'x';
+        case C_PRESSED:
+            return is_shift ? 'C' : 'c';
+        case V_PRESSED:
+            return is_shift ? 'V' : 'v';
+        case B_PRESSED:
+            return is_shift ? 'B' : 'b';
+        case N_PRESSED:
+            return is_shift ? 'N' : 'n';
+        case M_PRESSED:
+            return is_shift ? 'M' : 'm';
+        case COMMA_PRESSED:
+            return is_shift ? '<' : ',';
+        case FULL_STOP_PRESSED:
+            return is_shift ? '>' : '.';
+        case BACK_SLASH_PRESSED:
+            return is_shift ? '?' : '/';
+
+        //TODO: Numberical pad
+    }
+
+    return '\0';
+}
+
+/*
+ * Clears (fills with 0's) the keyboard key code buffer.
+ */
+static void _keyboard_clear_buffer(void)
+{
+    int i;
+
+    for(i = 0; i < KEYBOARD_BUFFER_SIZE; ++i)
+    {
+        _keyboard_state_struct_s.keyboard_buffer[i] = 0;
+    }
+
+    _keyboard_state_struct_s.keyboard_buffer_current_indice = 0;
 }
