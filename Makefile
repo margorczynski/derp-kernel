@@ -38,6 +38,7 @@ kernel/kernel.bin: kernel/kernel_entry.o ${KERNEL_OBJECTS} ${KERNEL_ASSEMBLY_OBJ
 		nasm $< -f bin -o $@
 
 image:	boot/bootloader.bin kernel/kernel.bin 
+		mkdir image
 		cat $^ > image/os-image.img
 		dd if=/dev/zero bs=1 count=1000000 >> image/os-image.img
 
